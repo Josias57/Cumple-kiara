@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Feliz Cumpleaños Kiara</title>
+  <style>
+    body {
+      margin: 0;
+      background: #050007;
+      color: white;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
+    }
+    h1 {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 3em;
+      color: #ffccff;
+      text-shadow: 0 0 10px #ff66ff, 0 0 20px #ff3399;
+    }
+    .recipient {
+      text-align: center;
+      font-size: 1.5em;
+      margin: 10px 0 20px;
+    }
+    .heart {
+      width: 100px;
+      height: 90px;
+      background: red;
+      clip-path: polygon(50% 0%, 100% 35%, 80% 100%, 50% 80%, 20% 100%, 0% 35%);
+      margin: 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      animation: beat 1s infinite;
+    }
+    .heart span {
+      color: white;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    @keyframes beat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+    }
+
+    /* 🎂 Torta con velas */
+    .cake {
+      position: relative;
+      margin: 40px auto;
+      width: 200px;
+      height: 120px;
+      background: #ff6699;
+      border-radius: 10px;
+      box-shadow: inset 0 -10px #cc3366;
+    }
+    .cake::before {
+      content: "";
+      position: absolute;
+      top: -30px;
+      left: 30px;
+      width: 140px;
+      height: 40px;
+      background: #fff;
+      border-radius: 50% / 40%;
+      box-shadow: inset 0 -5px #eee;
+    }
+    .candle {
+      position: absolute;
+      top: -50px;
+      width: 15px;
+      height: 40px;
+      background: #ffff99;
+      border-radius: 3px;
+    }
+    .candle:nth-child(1) { left: 40px; }
+    .candle:nth-child(2) { left: 90px; }
+    .candle:nth-child(3) { left: 140px; }
+    .flame {
+      position: absolute;
+      top: -15px;
+      left: 2px;
+      width: 10px;
+      height: 15px;
+      background: orange;
+      border-radius: 50%;
+      animation: flicker 0.3s infinite alternate;
+    }
+    @keyframes flicker {
+      from { transform: scale(1); opacity: 1; }
+      to { transform: scale(1.2); opacity: 0.7; }
+    }
+
+    /* 🎈 Globos */
+    .balloons {
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      display: flex;
+      gap: 15px;
+    }
+    .balloon {
+      width: 40px;
+      height: 50px;
+      border-radius: 50%;
+      background: red;
+      position: relative;
+      animation: float 3s ease-in-out infinite;
+    }
+    .balloon:nth-child(2) { background: blue; animation-delay: 0.5s; }
+    .balloon:nth-child(3) { background: green; animation-delay: 1s; }
+    .balloon::after {
+      content: "";
+      position: absolute;
+      bottom: -20px;
+      left: 18px;
+      width: 2px;
+      height: 20px;
+      background: white;
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-20px); }
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+    }
+    .modal-content {
+      background: white;
+      color: black;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      text-align: center;
+      font-size: 1.2em;
+      position: relative;
+    }
+    .close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 20px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎉 Feliz Cumpleaños 🎉</h1>
+  <div class="recipient">Para: <strong>Kiara</strong></div>
+
+  <!-- 🎂 Torta con velas -->
+  <div class="cake">
+    <div class="candle"><div class="flame"></div></div>
+    <div class="candle"><div class="flame"></div></div>
+    <div class="candle"><div class="flame"></div></div>
+  </div>
+
+  <div class="heart" id="heart">
+    <span>Leer carta</span>
+  </div>
+
+  <!-- 🎈 Globos -->
+  <div class="balloons">
+    <div class="balloon"></div>
+    <div class="balloon"></div>
+    <div class="balloon"></div>
+  </div>
+
+  <!-- Carta -->
+  <div class="modal" id="modal">
+    <div class="modal-content">
+      <span class="close" id="closeBtn">&times;</span>
+      <p>Para Kiara,</p>
+      <p>
+No sé bien cómo empezar, pero quiero ser sincero: me encantas.
+Recién estoy entrando en tu vida y quizá aún no me conoces tanto,
+pero me nace decirte lo especial que me pareces.
+
+Ojalá este día sea tan bonito como tú y que la vida siempre te regale motivos para sonreír.
+
+Con cariño,
+Jean</p>
+    </div>
+  </div>
+
+  <canvas id="fireworks"></canvas>
+
+  <script>
+    // Modal
+    const heart = document.getElementById("heart");
+    const modal = document.getElementById("modal");
+    const closeBtn = document.getElementById("closeBtn");
+
+    heart.onclick = () => { modal.style.display = "flex"; }
+    closeBtn.onclick = () => { modal.style.display = "none"; }
+    window.onclick = (e) => { if(e.target == modal) modal.style.display = "none"; }
+
+    // Fuegos artificiales
+    const canvas = document.getElementById("fireworks");
+    const ctx = canvas.getContext("2d");
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+
+    class Particle {
+      constructor(x,y,color){
+        this.x=x;this.y=y;
+        this.vx=(Math.random()-0.5)*6;
+        this.vy=(Math.random()-0.5)*6;
+        this.life=100;
+        this.color=color;
+      }
+      update(){
+        this.x+=this.vx; this.y+=this.vy;
+        this.life--;
+      }
+      draw(){
+        ctx.fillStyle=this.color;
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,2,0,Math.PI*2);
+        ctx.fill();
+      }
+    }
+
+    let particles=[];
+    function explode(x,y){
+      const colors=["#ff0066","#ffcc00","#33ff33","#66ccff","#ff33cc"];
+      for(let i=0;i<50;i++){
+        particles.push(new Particle(x,y,colors[Math.floor(Math.random()*colors.length)]));
+      }
+    }
+
+    function animate(){
+      ctx.fillStyle="rgba(0,0,0,0.2)";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      particles.forEach((p,i)=>{
+        p.update(); p.draw();
+        if(p.life<=0) particles.splice(i,1);
+      });
+      requestAnimationFrame(animate);
+    }
+    setInterval(()=>explode(Math.random()*canvas.width,Math.random()*canvas.height/2),1000);
+    animate();
+
+    window.addEventListener("resize", ()=>{
+      canvas.width=innerWidth;
+      canvas.height=innerHeight;
+    });
+  </script>
+</body>
+</html>
